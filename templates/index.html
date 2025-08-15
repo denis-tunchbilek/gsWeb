@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gsWebsite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="bg_red_container">
+            <div class="logo-row">
+                <div class="yellow-circle">
+                    GS
+                </div>
+                <span class="logo-text-right">GALATASARAY</span>
+            </div>
+            <div class="curent_place">
+                <span class="live-oval">LIVE</span>
+                <span class="live-info">{{ galatasaray_place }} место</span>
+            </div>
+            <div class="logo-underline"></div>
+            <div class="head_statistic">
+                <span><span class="stat-label">Следующий матч:</span> {{ next_opponent }} - {{ next_date }}</span>
+                <span><span class="stat-label">Голы:</span> {{ squad_goals }}</span>
+                <span><span class="stat-label">Последние 5:</span> {{ galatasaray_form }}</span>
+            </div>
+        </div>
+    </header>
+        <div class="main_information">
+            <div class="top_tables">
+                <div class="table">
+                    <div class="league_header">
+                        <img src="/static/trendyol-super-lig-yatay-logo.png" class="league_logo" alt="Super Lig Logo">
+                        <h3 class="league_name">Super Lig 2025/2026</h3>
+                    </div>
+                        <div class="border_table_names row">
+                            <div class="cell">#</div>
+                            <div class="cell">Команда</div>
+                            <div class="cell">И</div>
+                            <div class="cell">О</div>
+                            <div class="cell">Форма</div>
+                        </div>
+                        {% for row in table %}
+
+                            <div class="row {% if row['Squad'] == 'Galatasaray' %}highlight{% endif %}">
+                                <div class="cell">{{ row['Rk'] }}</div>
+                                <img src="{{ row['Logo'] }}" class="team-logo" alt="{{ row['Squad'] }} Logo">
+                                <div class="cell">{{ row['Squad'] }}</div>
+                                <div class="cell">{{ row['MP'] }}</div>
+                                <div class="cell">{{ row['Pts'] }}</div>
+                                <div class="cell">
+                                    {% for ch in row['Last 5'] | string%}
+                                    {% if ch == 'W' %}
+                                        <span class="win">W</span>
+                                    {% elif ch == 'D' %}
+                                        <span class="draw">D</span>
+                                    {% elif ch == 'L' %}
+                                        <span class="lose">L</span>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                </div>
+                <div class="table_statistic">
+                    <div class="statistic_header">
+                        <div class="statistic_icon_container">
+                            <img src="{{ url_for('static', filename='statistic_icon.png') }}" class="statistic_icon" alt="Statistic Icon">
+                            <h3>Статистика игроков</h3>
+                        </div>
+                            <div class="switch">
+                                <input type="radio" id="goals" name="stat" value="goals" checked>
+                                <label for="goals">Голы</label>
+
+                                <input type="radio" id="assists" name="stat" value="assists">
+                                <label for="assists">Передачи</label>
+                            </div>
+
+                            <div id="players-list" class="players-list"></div>
+
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    const radios = document.querySelectorAll('input[name="stat"]');
+                                    const playersList = document.getElementById("players-list");
+
+                                    function loadPlayers(stat) {
+                                        fetch(`/players?stat=${stat}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                playersList.innerHTML = "";
+                                                data.forEach(player => {
+                                                    const div = document.createElement("div");
+                                                    div.classList.add("player-card");
+
+                                                    // Если фото нет, можно поставить заглушку
+                                                    const photoUrl = player.Photo || 'https://via.placeholder.com/40';
+
+                                                    div.innerHTML = `
+                                                        <img class="player-photo" src="${photoUrl}" alt="${player.Player}">
+                                                        <span class="player-name">${player.Player}</span>
+                                                        <span class="player-value ${stat === "assists" ? "assist-highlight" : ""}">${player.Value}</span>
+                                                    `;
+                
+                                                    playersList.appendChild(div);
+                                                });
+                                            })
+                                            .catch(err => console.error("Ошибка загрузки игроков:", err));
+                                    }
+
+                                    loadPlayers("goals");
+
+                                    radios.forEach(radio => {
+                                        radio.addEventListener("change", () => {
+                                            loadPlayers(radio.value);
+                                        });
+                                    });
+                                });
+                            </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="gallery_wrapper">
+        <div class="gallery_header">
+            <img src="{{ url_for('static', filename='icons8-камера-24.png') }}" class="gallery_icon" alt="Gallery Icon">
+            <h3>Галерея</h3>
+        </div>
+
+                <div class="gallery">
+                    <img src="/static/galatasaray_photos/_ (1).jpeg" class="big">
+                    <img src="/static/galatasaray_photos/_ (2).jpeg">
+                    <img src="/static/galatasaray_photos/_ (3).jpeg">
+                    <img src="/static/galatasaray_photos/_ (4).jpeg">
+                    <img src="/static/galatasaray_photos/_ (5).jpeg">
+                    <img src="/static/galatasaray_photos/_ (6).jpeg">
+                    <img src="/static/galatasaray_photos/_ (7).jpeg">
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2025 Galatasaray FC. Все права защищены.
+    </footer>
+</body>
+</html>
